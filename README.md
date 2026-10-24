@@ -25,8 +25,15 @@ Plain HTML, CSS and a little JavaScript. No build step, so you can edit any file
 ```
 Keep clips short (10–20 s) and under about 8 MB.
 
-## Hosting on GitHub Pages (free)
-1. Create a repository on github.com, for example `harvey-knock`.
-2. Upload everything in this folder **except** `originals/`.
-3. In the repository, go to Settings → Pages, choose the `main` branch, and save.
-4. The site appears at `https://<username>.github.io/harvey-knock/`. You can add a custom domain on the same settings page.
+## Publishing
+The site lives at https://github.com/HKossy1/harvey-knock-portfolio and is published from the `main` branch.
+- Changes made in this folder stay on this computer until they are committed and pushed.
+- Once pushed, the host (Netlify) rebuilds the live site automatically, usually within a minute.
+- `originals/`, the cinema trials and `brand/` are listed in `.gitignore`, so they are never uploaded.
+
+To publish by hand:
+```
+git add -A
+git commit -m "Describe the change"
+git push
+```
