@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Composing a Feeling · Harvey Knock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="name" href="index.html">Harvey Knock</a>
+    <nav><a href="index.html#work">Work</a><a href="about.html">About</a><a href="mailto:knock.harvey@gmail.com">Contact</a></nav>
+  </header>
+
+  <main class="project wide-page films-page">
+    <header class="project-intro">
+      <h1>Composing a Feeling</h1>
+      <p class="project-meta">Personal project · Film editing &amp; original scores</p>
+      <p class="caption">An exploration of composing soundtracks for moving image, and of how music can draw out one specific feeling. Short stories edited from footage are each set to an original score, alongside two studies imagining life as other animals: a fish and an insect.</p>
+    </header>
+
+    <section class="film-feature">
+      <div class="feature-inner">
+      <div class="film-frame">
+        <video playsinline preload="none"></video>
+        <button class="film-play" type="button" aria-label="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+        <button class="film-full" type="button" aria-label="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="enter" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="exit" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+      </div>
+      <div class="feature-caption"><span class="feature-title"></span><span class="feature-sub"></span></div>
+      </div>
+    </section>
+
+    <p class="section-label">More films</p>
+    <div class="film-reel"></div>
+    <script type="application/json" id="films-data">[{"src": "videos/a-little-home.mp4", "poster": "videos/a-little-home.webp", "ratio": 1.25, "title": "A Little Home", "sub": "Trailer · 0:59"}, {"src": "videos/storm.mp4", "poster": "videos/storm.webp", "ratio": 1.6667, "title": "An Unsettled Light", "sub": "Trailer · 0:36"}, {"src": "videos/life-as-a-fish.mp4", "poster": "videos/life-as-a-fish.webp", "ratio": 1.6667, "title": "As a Fish", "sub": "Study · 0:39"}, {"src": "videos/life-as-an-insect.mp4", "poster": "videos/life-as-an-insect.webp", "ratio": 1.6667, "title": "As an Insect", "sub": "Study · 0:37"}]</script>
+
+    <nav class="project-nav"><a href="index.html#work">All work</a><a href="natural-design.html">Next: Natural Design</a></nav>
+  </main>
+
+  <footer><a href="mailto:knock.harvey@gmail.com">knock.harvey@gmail.com</a> · Somerset, UK</footer>
+  <script src="films.js" defer></script>
+</body>
+</html>

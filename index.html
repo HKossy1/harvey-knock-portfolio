@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harvey Knock</title>
+  <meta name="description" content="Harvey Knock, graphic designer working with pattern, photography, code and interaction.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="name" href="index.html">Harvey Knock</a>
+    <nav><a href="#work">Work</a><a href="about.html">About</a><a href="mailto:knock.harvey@gmail.com">Contact</a></nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-sketch" data-sketch="ripples" data-src="images/home-geranium.webp" aria-hidden="true"></div>
+    <label class="ripple-control">
+      <span>Ripple</span>
+      <span class="ripple-track">
+        <input type="range" id="ripple-intensity" min="0" max="1" step="any" value="0.2" aria-label="Ripple intensity">
+        <span class="ripple-thumb" aria-hidden="true"></span>
+      </span>
+    </label>
+    <div class="hero-text">
+      <h1>Harvey Knock</h1>
+      <p class="credential">First Class Honours, Graphic Design, Falmouth University</p>
+    </div>
+  </section>
+
+  <ol class="work-list" id="work">
+    <li><a href="natural-design.html">
+      <figure><img src="images/p2-03.webp" alt="Natural Design publication cover with a white flower"></figure>
+      <span class="num">01</span><span class="title">Natural Design</span><small>Publication</small>
+    </a></li>
+    <li><a href="coded-visuals.html">
+      <figure><img src="images/p4-03.webp" alt="Flower photograph transformed into rotating rings"></figure>
+      <span class="num">02</span><span class="title">Coded Visuals</span><small>Creative coding</small>
+    </a></li>
+    <li><a href="living-puzzles.html">
+      <figure><img src="images/p5-04.webp" alt="Living Cycle puzzle of clover leaves" loading="lazy"></figure>
+      <span class="num">03</span><span class="title">Living Puzzles</span><small>Object</small>
+    </a></li>
+    <li><a href="parallel-perceptions.html">
+      <figure><img src="images/p6-05.webp" alt="Pink Anthurium with projected light ripples" loading="lazy"></figure>
+      <span class="num">04</span><span class="title">Parallel Perceptions</span><small>Installation</small>
+    </a></li>
+    <li><a href="interactive-geometry.html">
+      <figure><img src="images/p7-03.webp" alt="Gesture-driven geometry projected in a dark room" loading="lazy"></figure>
+      <span class="num">05</span><span class="title">Interactive Geometry</span><small>Interaction</small>
+    </a></li>
+    <li><a href="horneywink-cider.html">
+      <figure><img src="images/p9-01.webp" alt="Horneywink lapwing emblem in gold foil" loading="lazy"></figure>
+      <span class="num">06</span><span class="title">Horneywink Cider</span><small>Client brand</small>
+    </a></li>
+    <li><a href="regenerate.html">
+      <figure><img src="images/regenerate/page-01.webp" alt="REGENERATE magazine cover" loading="lazy"></figure>
+      <span class="num">07</span><span class="title">REGENERATE</span><small>Publication</small>
+    </a></li>
+    <li><a href="composing-a-feeling.html">
+      <figure><img src="videos/a-little-home-card.webp" alt="Still from A Little Home: a pink flower in focus against a blurred field of blooms" loading="lazy"></figure>
+      <span class="num">08</span><span class="title">Composing a Feeling</span><small>Film &amp; sound</small>
+    </a></li>
+  </ol>
+
+  <footer><a href="mailto:knock.harvey@gmail.com">knock.harvey@gmail.com</a> · Somerset, UK</footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.8/p5.min.js" defer></script>
+  <script src="puzzles.js" defer></script>
+</body>
+</html>

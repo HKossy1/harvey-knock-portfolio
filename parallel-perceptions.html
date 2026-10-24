@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parallel Perceptions · Harvey Knock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="name" href="index.html">Harvey Knock</a>
+    <nav><a href="index.html#work">Work</a><a href="about.html">About</a><a href="mailto:knock.harvey@gmail.com">Contact</a></nav>
+  </header>
+
+  <main class="project">
+    <div class="pp-layout">
+      <header class="project-intro pp-intro">
+        <h1>Parallel Perceptions</h1>
+      <p class="project-meta">Solo project · Installation · TouchDesigner, MediaPipe, projection mapping</p>
+        <p class="caption">A physical installation speculating on an alternate reality where humans can perceive the lifeforce of plants. Using projection mapping and proximity tracking, ripples of light spread across a Pink Anthurium on your approach with varying intensity depending on how close you get. Visualising phototropism and plant awareness, encouraging a more attentive, respectful relationship with nature.</p>
+      </header>
+      <figure class="pp-plant"><img src="images/p6-05.webp" width="960" height="765" alt="Pink Anthurium with projected light ripples"></figure>
+      <div class="pp-row">
+        <figure><img src="images/p6-01.webp" width="692" height="711" alt="Visitor approaching the installation" loading="lazy"></figure>
+        <figure><img src="images/p6-02.webp" width="692" height="711" alt="Visitor close to the plant" loading="lazy"></figure>
+        <figure><img src="images/p6-03.webp" width="692" height="711" alt="Visitor reaching towards the plant" loading="lazy"></figure>
+        <figure><img src="images/p6-04.webp" width="692" height="711" alt="Visitor examining the plant" loading="lazy"></figure>
+      </div>
+    </div>
+
+    <section class="pp-try">
+      <div id="pp-demo" class="pp-demo" data-plant="images/pp-process/demo-plant.webp" data-leaves="images/pp-process/demo-leaves.png" role="img" aria-label="Interactive Anthurium: pink ripples spread across its leaves as the pointer approaches"></div>
+      <div class="pp-try-text">
+        <h2>Try it</h2>
+        <p>Move towards the plant. As in the installation, the leaves respond to how close you are: the nearer you come, the more colour the ripples gain and the faster they move. Step away and they settle.</p>
+      </div>
+    </section>
+
+    <section class="pp-story">
+      <h2>How it came together</h2>
+
+      <div class="story-step">
+        <div class="story-text"><h3>Mapping each leaf</h3><p>Each leaf was mapped by hand in Kantan Mapper, inside TouchDesigner, so the light falls on the leaves alone.</p></div>
+        <div class="story-images two"><figure><img src="images/pp-process/mapped.webp" width="467" height="537" alt="Test visuals mapped onto individual leaves" loading="lazy"></figure><figure><img src="images/pp-process/mapped-stand.webp" width="468" height="540" alt="The mapped plant on its stand" loading="lazy"></figure></div>
+      </div>
+
+      <div class="story-step">
+        <div class="story-text"><h3>A heartbeat for the plant</h3><p>Ripples have a natural cadence, almost like a heartbeat, quickening as you come closer and settling as you step away. I made them pink, the colour of the plant’s own spathes, so the light reads as an extension of the plant rather than something cast onto it.</p></div>
+        <div class="story-images"><figure><img src="images/pp-process/ripple-pink.webp" width="722" height="555" alt="Pink ripples pulsing across the Anthurium’s leaves" loading="lazy"></figure></div>
+      </div>
+
+      <div class="story-step">
+        <div class="story-text"><h3>Sensing you</h3><p>MediaPipe, through Torin Blankensmith’s open-source TouchDesigner plugin, tracks how close your face is to the plant. That distance drives both the colour and the speed of the ripples.</p></div>
+        <div class="story-images"><figure><img src="images/pp-process/tracking.webp" width="488" height="310" alt="MediaPipe tracking a face in TouchDesigner" loading="lazy"></figure></div>
+      </div>
+
+      <div class="story-step">
+        <div class="story-text"><h3>The setup</h3><p>A projector on a tripod, a webcam, a laptop and the plant, positioned so every visible leaf could be mapped.</p></div>
+        <div class="story-images two"><figure><img src="images/pp-process/setup.webp" width="467" height="622" alt="The projector on its tripod facing the plant" loading="lazy"></figure><figure><img src="images/pp-process/result.webp" width="467" height="632" alt="The finished effect: pink ripples on each leaf" loading="lazy"></figure></div>
+      </div>
+    </section>
+
+    <nav class="project-nav"><a href="index.html#work">All work</a><a href="interactive-geometry.html">Next: Interactive Geometry</a></nav>
+  </main>
+
+  <footer><a href="mailto:knock.harvey@gmail.com">knock.harvey@gmail.com</a> · Somerset, UK</footer>
+  <script src="pp-demo.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Source files: full-size photos, PDFs, films, Blender and TouchDesigner projects (kept on this computer only)
+originals/
+
+# Trials and drafts that aren't part of the live site
+cinema-trials.html
+cinema.css
+cinema.js
+brand/
+
+# System files
+Thumbs.db
+.DS_Store

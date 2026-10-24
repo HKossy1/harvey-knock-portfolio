@@ -1,0 +1,392 @@
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --muted: #9a9a9a;
+  --rule: #333;
+  --serif: "EB Garamond", Garamond, "Times New Roman", serif;
+  --gutter: clamp(16px, 5vw, 64px);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+a:hover, a:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
+img { display: block; max-width: 100%; height: auto; }
+
+.site-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 24px var(--gutter); font-size: 15px;
+}
+.site-header nav { display: flex; gap: 24px; }
+.site-header .name { font-size: 18px; }
+
+/* Landing */
+.hero {
+  position: relative; min-height: 78vh; display: grid; place-items: center;
+  text-align: center; padding: 0 var(--gutter); overflow: hidden;
+}
+.hero-sketch {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: .55; pointer-events: none;
+}
+/* Soft dark pool behind the text so it reads over bright photos */
+.hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 45% at 50% 50%, rgba(0,0,0,.7), transparent 75%);
+}
+.hero-text { position: relative; z-index: 1; max-width: 34rem; text-shadow: 0 1px 12px rgba(0,0,0,.6); }
+.hero h1 { font-weight: 400; font-size: clamp(40px, 7vw, 64px); margin: 0 0 16px; }
+.hero h1::after {
+  content: ""; display: block; width: 7rem; height: 1px;
+  background: var(--fg); margin: 20px auto 0; opacity: .7;
+}
+.hero p { margin: 0; color: #ddd; }
+.hero .credential { margin-top: 14px; font-size: 15px; color: #d0d0d0; }
+
+/* Glass slider for ripple intensity */
+.ripple-control {
+  position: absolute; z-index: 2; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 18px; border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 24px rgba(0,0,0,.25);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.75);
+  opacity: 0; animation: fade-in 1.2s ease 1.5s forwards;
+}
+.ripple-control input {
+  -webkit-appearance: none; appearance: none; width: 140px; height: 18px;
+  background: transparent; cursor: pointer; margin: 0;
+}
+.ripple-control input::-webkit-slider-runnable-track { height: 1px; background: rgba(255,255,255,.45); }
+.ripple-control input::-moz-range-track { height: 1px; background: rgba(255,255,255,.45); }
+/* The real thumb stays (invisible) for dragging and keys; the visible dot is drawn
+   separately and moved with a sub-pixel transform, so it glides rather than steps */
+.ripple-track { position: relative; display: inline-flex; align-items: center; }
+.ripple-control input::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%;
+  background: transparent;
+}
+.ripple-control input::-moz-range-thumb { width: 14px; height: 14px; border: 0; background: transparent; }
+.ripple-thumb {
+  position: absolute; left: 0; top: 50%; width: 14px; height: 14px; margin-top: -7px;
+  border-radius: 50%; pointer-events: none; will-change: transform;
+  background: rgba(255,255,255,.9); box-shadow: 0 0 0 4px rgba(255,255,255,.12);
+  transform: translate3d(var(--thumb-x, 0px), 0, 0);
+  transition: box-shadow .3s;
+}
+.ripple-track:hover .ripple-thumb,
+.ripple-track:focus-within .ripple-thumb { box-shadow: 0 0 0 7px rgba(255,255,255,.16); }
+.ripple-control input:focus-visible { outline: none; }
+@keyframes fade-in { to { opacity: 1; } }
+
+/* Project index: image-led, two quiet columns */
+.work-list {
+  list-style: none; margin: 0 auto; padding: 96px var(--gutter) 120px; max-width: 1200px;
+  display: grid; grid-template-columns: repeat(2, 1fr); column-gap: clamp(24px, 4vw, 64px); row-gap: clamp(56px, 7vw, 96px);
+}
+.work-list a { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; column-gap: 14px; }
+.work-list a:hover, .work-list a:focus-visible { text-decoration: none; }
+.work-list figure {
+  grid-column: 1 / -1; margin: 0 0 18px; aspect-ratio: 4 / 3; overflow: hidden; background: #0b0b0b;
+}
+.work-list img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 1.2s cubic-bezier(.2,.7,.2,1), opacity .6s ease;
+}
+/* Odd one out (Horneywink, the client work) closes the list at full width */
+.work-list li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.work-list li:last-child:nth-child(odd) figure { aspect-ratio: 21 / 9; }
+.work-list .num { font-size: 13px; color: var(--muted); letter-spacing: .06em; }
+.work-list .title { font-size: clamp(22px, 2.4vw, 28px); }
+.work-list small { font-size: 13px; color: var(--muted); letter-spacing: .04em; }
+.work-list a:hover img, .work-list a:focus-visible img { transform: scale(1.03); }
+/* Quietly recede the other projects while one is hovered */
+@media (hover: hover) {
+  .work-list:hover img { opacity: .55; }
+  .work-list a:hover img { opacity: 1; }
+}
+
+/* Project page */
+.project { padding: 16px var(--gutter) 80px; max-width: 1320px; margin: 0 auto; }
+.project h1 { font-weight: 400; font-size: clamp(34px, 4.6vw, 48px); line-height: 1.1; margin: 8px 0 14px; }
+.project .caption { max-width: 36rem; font-size: 15px; line-height: 1.6; color: #ddd; margin: 0 0 32px; }
+/* One-line project details under the title: role, discipline, tools */
+.project-meta { max-width: 36rem; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; line-height: 1.7; color: var(--muted); margin: -4px 0 16px; }
+.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(14px, 2vw, 24px); }
+.gallery figure { margin: 0; }
+.gallery .wide { grid-column: 1 / -1; }
+.section-label { margin: 48px 0 16px; font-size: 14px; color: var(--muted); }
+.project-nav {
+  display: flex; justify-content: space-between; margin-top: 64px;
+  padding-top: 20px; border-top: 1px solid var(--rule); font-size: 15px;
+}
+
+/* Project pages keep their stacked, half-screen proportions on wide screens too */
+.project:has(.project-intro) { max-width: 960px; }
+
+/* Denser projects: small grid that opens in a lightbox */
+.gallery.grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.gallery.grid img { cursor: zoom-in; aspect-ratio: 1; object-fit: contain; width: 100%; }
+.lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,.94); display: none;
+  place-items: center; padding: 24px; z-index: 10;
+}
+.lightbox.open { display: grid; }
+.lightbox img { max-height: 90vh; max-width: 100%; object-fit: contain; }
+.lb-close {
+  position: absolute; top: 12px; right: 16px; background: none; border: 0;
+  color: var(--fg); font-size: 36px; cursor: pointer; font-family: inherit;
+}
+
+/* Coded Visuals: the live sketch full-frame on top, as in the original file, stills in a row below */
+.cv-layout {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  max-width: min(100%, 95vh);
+}
+.cv-sketch { grid-column: 1 / -1; aspect-ratio: 2000 / 1339; background: #0b0b0b; overflow: hidden; }
+.cv-layout figure { aspect-ratio: 3 / 2; }
+.cv-sketch canvas { width: 100% !important; height: 100% !important; display: block; }
+.cv-layout figure { margin: 0; min-height: 0; }
+.cv-layout figure img { width: 100%; height: 100%; object-fit: cover; }
+.cv-note { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+/* Further ring studies: three in a row, the same gap as the stills above */
+.cv-studies { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 40px; }
+.cv-studies figure { margin: 0; }
+.cv-studies img { width: 100%; height: auto; }
+@media (max-width: 640px) { .cv-studies { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .cv-layout { max-width: 100%; }
+}
+
+/* Parallel Perceptions: title and caption beside the Anthurium with its rings,
+   then the four exhibition photos in a row (proportions as shares of the content width) */
+.pp-layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); column-gap: clamp(28px, 4.5vw, 64px);
+  grid-template-areas: "intro plant" "row row";
+  grid-template-rows: auto auto; align-items: center;
+}
+.pp-intro { grid-area: intro; }
+.pp-intro h1 { margin-top: 0; }
+.pp-intro .caption { margin-bottom: 0; }
+.pp-plant { grid-area: plant; margin: 0; align-self: start; }
+.pp-row {
+  grid-area: row; display: grid; grid-template-columns: repeat(4, 1fr);
+  column-gap: 3.2%; margin-top: 3.2%;
+}
+.pp-row figure { margin: 0; }
+.pp-row img { width: 100%; height: auto; }
+@media (max-width: 640px) {
+  .pp-layout { grid-template-columns: 1fr; grid-template-areas: "intro" "plant" "row"; }
+  .pp-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Natural Design flip-book */
+/* Wide project pages: the main piece breaks out of the 960px text column, up to
+   1040px, and the title and caption share its left edge.
+   Natural Design: the book (150vh keeps a spread under three-quarters of the screen).
+   Coded Visuals: the live sketch and stills (105vh stops them outgrowing short screens). */
+.wide-page { --book-w: min(1040px, 100vw - 2 * var(--gutter), 150vh); }
+.wide-page.cv-page { --book-w: min(1040px, 100vw - 2 * var(--gutter), 105vh); }
+.wide-page .project-intro,
+.wide-page .cv-layout,
+.wide-page .cv-note,
+.wide-page .cv-studies { width: var(--book-w); max-width: none; margin-left: calc(50% - var(--book-w) / 2); }
+.wide-page .project-intro .caption { margin-bottom: 16px; }
+.book-section {
+  position: relative; width: var(--book-w); margin: 8px 0 72px calc(50% - var(--book-w) / 2);
+  padding: 12px 0 28px;
+  display: flex; flex-direction: column; align-items: center;
+}
+/* Soft light pooled behind the book, so the glass controls have something to frost */
+.book-section::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 55% 60% at 50% 45%, rgba(255,255,255,.07), transparent 70%);
+}
+.book-stage { width: 100%; margin: 0 auto; filter: drop-shadow(0 24px 40px rgba(0,0,0,.6)); }
+#book .page { background: #fff; overflow: hidden; }
+#book .page.cover { background: #0b0b0b; }
+#book .page img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Light across the paper: a soft shadow falling into the central crease, and on the
+   left page a gentle rise and dip that reads as the paper curving into the spine */
+#book .page::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+#book .page.--left:not(.cover)::after {
+  background: linear-gradient(to right,
+    rgba(0,0,0,.05) 0%, rgba(0,0,0,0) 14%,
+    rgba(255,255,255,.07) 58%, rgba(255,255,255,0) 74%,
+    rgba(0,0,0,.05) 84%, rgba(0,0,0,.13) 93%, rgba(0,0,0,.26) 100%);
+}
+#book .page.--right:not(.cover)::after {
+  background: linear-gradient(to right,
+    rgba(0,0,0,.22) 0%, rgba(0,0,0,.09) 5%, rgba(0,0,0,.02) 12%,
+    rgba(255,255,255,.05) 22%, rgba(255,255,255,0) 40%,
+    rgba(0,0,0,0) 90%, rgba(0,0,0,.04) 100%);
+}
+
+/* Page edges: thin stacks of paper on the outer sides, sized by pages read and to come */
+.book-stage { position: relative; }
+.book-edge {
+  position: absolute; z-index: 0; pointer-events: none; width: 0;
+  background: repeating-linear-gradient(to right, #f3f0e9 0 1px, #cfc9bd 1px 2px);
+  box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  transition: width .6s ease, left .6s ease;
+}
+.book-edge.left  { clip-path: polygon(0 1.2%, 100% 0, 100% 100%, 0 98.8%); }
+.book-edge.right { clip-path: polygon(0 0, 100% 1.2%, 100% 98.8%, 0 100%); }
+
+/* Chapter tabs: quiet text buttons; the current chapter sits in a clear glass pill */
+.book-chapters { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 22px; }
+.book-chapters button {
+  font: inherit; font-size: 13px; letter-spacing: .06em; color: rgba(255,255,255,.55);
+  padding: 7px 14px; border-radius: 999px; border: 1px solid transparent;
+  background: transparent; cursor: pointer; transition: color .4s, background .4s, border-color .4s;
+}
+.book-chapters button:hover, .book-chapters button:focus-visible { color: #fff; outline: none; }
+.book-chapters button[aria-current="true"] {
+  color: #fff; border-color: rgba(255,255,255,.22);
+  background: linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 60%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+/* Glass control pill, matching the ripple slider on the home page */
+.book-controls {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
+  padding: 6px; border-radius: 999px;
+  /* Clear glass: almost no fill, a light sheen across the top, a bright hairline rim */
+  background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.015) 55%, rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.22);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), inset 0 -1px 0 rgba(255,255,255,.05), 0 10px 30px rgba(0,0,0,.3);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  font-size: 13px; letter-spacing: .08em; color: rgba(255,255,255,.8);
+}
+.book-controls button {
+  width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
+  display: grid; place-items: center; background: transparent; color: var(--fg);
+  transition: background .3s, transform .3s;
+}
+.book-controls button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.book-controls button:hover, .book-controls button:focus-visible { background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); outline: none; }
+.book-controls button:active { transform: scale(.94); }
+#book-count { min-width: 8.5em; text-align: center; font-variant-numeric: tabular-nums; }
+.book-hint { text-align: center; font-size: 12px; letter-spacing: .04em; color: #6b6b6b; margin: 12px 0 0; }
+
+/* Composing a Feeling: the chosen film plays large, the other films sit in a row below */
+.films-page .film-feature,
+.films-page .section-label,
+.films-page .film-reel,
+.films-page .project-nav { width: var(--book-w); margin-left: calc(50% - var(--book-w) / 2); }
+.films-page .section-label { margin-top: 40px; margin-bottom: 14px; }
+.feature-inner { margin: 0; }   /* left-aligned with the heading; width set per film by films.js */
+/* A 16:9 frame on black: each film sits inside it at its own shape, so any bars vanish into the page */
+.film-frame { position: relative; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
+.film-frame video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+.film-play {
+  position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px;
+  display: grid; place-items: center; border-radius: 50%; cursor: pointer; color: #fff;
+  background: linear-gradient(160deg, rgba(255,255,255,.18), rgba(255,255,255,.04) 60%);
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 10px 30px rgba(0,0,0,.35);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  transition: transform .4s ease, background .4s ease, opacity .4s ease;
+}
+.film-play svg { width: 22px; height: 22px; fill: currentColor; margin-left: 3px; }
+.film-play:hover, .film-play:focus-visible { transform: scale(1.06); background: rgba(255,255,255,.2); outline: none; }
+.film-frame.is-playing .film-play { opacity: 0; pointer-events: none; }
+/* Full-screen button: small glass square in the top-right corner, clear of the video controls */
+.film-full {
+  position: absolute; top: 12px; right: 12px; width: 38px; height: 38px;
+  display: grid; place-items: center; border-radius: 10px; cursor: pointer; color: #fff;
+  background: linear-gradient(160deg, rgba(255,255,255,.16), rgba(255,255,255,.03) 60%);
+  border: 1px solid rgba(255,255,255,.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 6px 18px rgba(0,0,0,.3);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  opacity: .75; transition: opacity .3s, background .3s;
+}
+.film-full svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.film-full .exit { display: none; }
+.film-full.is-on .enter { display: none; }
+.film-full.is-on .exit { display: inline; }
+.film-frame:hover .film-full, .film-full:focus-visible { opacity: 1; outline: none; }
+.film-full:hover { background: rgba(255,255,255,.22); }
+/* In full screen the frame fills the screen and the film sits centred on black */
+.film-frame:fullscreen { aspect-ratio: auto; width: 100vw; height: 100vh; }
+.film-frame:-webkit-full-screen { aspect-ratio: auto; width: 100vw; height: 100vh; }
+.feature-caption { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 14px; }
+.feature-title { font-size: 22px; }
+.feature-sub, .film-sub { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.film-title { font-size: 17px; }
+/* The row of other films */
+.film-reel { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(12px, 2vw, 22px); }
+.reel-item { all: unset; cursor: pointer; display: block; }
+.reel-thumb { position: relative; display: block; aspect-ratio: 16 / 10; overflow: hidden; background: #000; }
+.reel-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: .85; transition: transform 1s cubic-bezier(.2,.7,.2,1), opacity .5s; }
+.reel-play {
+  position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  display: grid; place-items: center; border-radius: 50%; color: #fff;
+  background: linear-gradient(160deg, rgba(255,255,255,.18), rgba(255,255,255,.04) 60%);
+  border: 1px solid rgba(255,255,255,.35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  opacity: .85; transition: opacity .4s, transform .4s;
+}
+.reel-play svg { width: 16px; height: 16px; fill: currentColor; margin-left: 2px; }
+.reel-item:hover .reel-thumb img, .reel-item:focus-visible .reel-thumb img { transform: scale(1.04); opacity: 1; }
+.reel-item:hover .reel-play, .reel-item:focus-visible .reel-play { opacity: 1; transform: scale(1.06); }
+.reel-item:focus-visible { outline: 1px solid rgba(255,255,255,.5); outline-offset: 4px; }
+.reel-caption { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 10px; }
+@media (max-width: 640px) {
+  .film-reel { grid-template-columns: 1fr; }
+}
+
+/* Interactive puzzle pieces */
+.interactive { margin: 48px auto 0; max-width: 520px; text-align: center; }
+.interactive [data-sketch] { width: 100%; }
+.interactive + .interactive { margin-top: 40px; }
+.interactive p { color: var(--muted); font-size: 15px; margin: 16px 0 0; }
+
+.about { max-width: 36rem; }
+.about p { color: #ddd; }
+
+/* Parallel Perceptions: live demo and the short process story */
+.pp-try { display: grid; grid-template-columns: minmax(0, 420px) 1fr; gap: clamp(24px, 4vw, 56px); align-items: center; margin-top: 72px; }
+.pp-demo { position: relative; aspect-ratio: 650 / 880; background: #000; cursor: crosshair; touch-action: none; }
+.pp-demo canvas { display: block; width: 100%; height: 100%; }
+.pp-demo.no-webgl { background: url(images/pp-process/demo-plant.webp) center / contain no-repeat; }
+.pp-try h2, .pp-story h2 { font-weight: 400; font-size: 26px; margin: 0 0 10px; }
+.pp-try p { max-width: 30rem; font-size: 15px; line-height: 1.6; color: #ddd; margin: 0; }
+.pp-story { margin-top: 80px; padding-top: 28px; border-top: 1px solid var(--rule); }
+.story-step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: clamp(20px, 3vw, 40px); align-items: center; margin-top: 44px; }
+.story-step h3 { font-weight: 400; font-size: 20px; margin: 0 0 8px; }
+.story-step p { font-size: 15px; line-height: 1.6; color: #ddd; margin: 0; max-width: 30rem; }
+.story-images { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.story-images.two { grid-template-columns: 1fr 1fr; }
+.story-images figure { margin: 0; }
+.story-images img { width: 100%; max-height: 360px; object-fit: cover; }
+.story-images.two img { aspect-ratio: 4 / 5; height: auto; }   /* pairs sit level */
+@media (max-width: 640px) {
+  .pp-try, .story-step { grid-template-columns: 1fr; }
+  .pp-try { margin-top: 48px; }
+}
+
+footer { padding: 32px var(--gutter) 48px; font-size: 14px; color: var(--muted); text-align: center; }
+
+@media (max-width: 640px) {
+  .gallery { grid-template-columns: 1fr; }
+  .site-header nav { gap: 16px; }
+  .work-list { grid-template-columns: 1fr; padding-top: 64px; }
+  .ripple-control { bottom: 20px; }
+  .ripple-control input { width: 110px; }
+}
