@@ -1,0 +1,2 @@
+# Send the old Netlify address to the real domain
+https://harveyknock.netlify.app/*  https://harveyknock.com/:splat  301!

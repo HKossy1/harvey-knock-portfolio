@@ -26,7 +26,10 @@ Plain HTML, CSS and a little JavaScript. No build step, so you can edit any file
 Keep clips short (10–20 s) and under about 8 MB.
 
 ## Publishing
-The site lives at https://github.com/HKossy1/harvey-knock-portfolio and is published from the `main` branch.
+The site is live at https://harveyknock.com. Its code lives at https://github.com/HKossy1/harvey-knock-portfolio and is published from the `main` branch.
+- The domain is registered with Cloudflare, whose DNS points it at Netlify (an A record to `75.2.60.5` and a `www` CNAME to `harveyknock.netlify.app`, both "DNS only").
+- `_redirects` sends the old harveyknock.netlify.app address to the domain.
+- Link previews: each page has share tags using an image in `images/share/` (1200×630).
 - Changes made in this folder stay on this computer until they are committed and pushed.
 - Once pushed, the host (Netlify) rebuilds the live site automatically, usually within a minute.
 - `originals/`, the cinema trials and `brand/` are listed in `.gitignore`, so they are never uploaded.
