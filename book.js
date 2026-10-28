@@ -170,21 +170,26 @@
   document.getElementById('book-next')?.addEventListener('click', turnNext);
 
   // All turns lift from the bottom corner, like turning a real page by its lower edge.
-  // Autoplay: turn a page every 7 seconds while the book is on screen.
-  // Any hand-turned page restarts the 7-second wait; hovering pauses it.
-  const INTERVAL = +(el.dataset.interval || 7000);   // milliseconds between automatic page turns
+  // Autoplay: the first page turns 4 seconds after the book comes on screen, then one every
+  // 4 seconds. After a visitor clicks (a page, an arrow, a chapter) or uses the keys, it
+  // waits 10 seconds before carrying on. Hovering pauses it.
+  const INTERVAL = +(el.dataset.interval || 4000);   // milliseconds between automatic page turns
+  const AFTER_CLICK = 10000;                          // wait after a visitor turns or clicks
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let visible = false, hovering = false, timer = null;
+  let visible = false, hovering = false, timer = null, wait = INTERVAL;
 
   function schedule() {
     clearTimeout(timer);
     if (still || !visible || hovering || document.hidden) return;
     timer = setTimeout(() => {
+      wait = INTERVAL;
       const i = book.getCurrentPageIndex();
       // After the back cover, return to the opening spread and begin again
       if (i >= total - 1) book.flip(START, 'bottom'); else turnNext();
-    }, INTERVAL);
+    }, wait);
   }
+  function visitorAction() { wait = AFTER_CLICK; schedule(); }
+  el.closest('.book-section')?.addEventListener('pointerdown', visitorAction);
   book.on('flip', schedule);
   book.on('changeState', (e) => { if (e.data !== 'read') clearTimeout(timer); else schedule(); });
 
@@ -196,7 +201,7 @@
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; schedule(); }, { threshold: 0.4 }).observe(el);
   addEventListener('keydown', (e) => {
     if (!visible) return;
-    if (e.key === 'ArrowRight') turnNext();
-    if (e.key === 'ArrowLeft') book.flipPrev('bottom');
+    if (e.key === 'ArrowRight') { visitorAction(); turnNext(); }
+    if (e.key === 'ArrowLeft') { visitorAction(); book.flipPrev('bottom'); }
   });
 })();
