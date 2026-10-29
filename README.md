@@ -15,6 +15,9 @@ Plain HTML, CSS and a little JavaScript. No build step, so you can edit any file
 - `images/`: web-sized WebP images (currently taken from the portfolio PDF)
 - `originals/`: drop high-quality photos, videos and p5.js sketches here, one folder per project
 
+## Arranging gallery photos
+`arrange.html` is a private layout tool (it's in `.gitignore`, so it never goes online). Open it through the local preview, pick a project, drag the photos into order, set each one's size (1 column, 2 columns or full width), the number of columns and the style (rows, square tiles or stacked columns), then press Done. The result is kept in the browser (`localStorage` key `arrange:result`) for Claude to apply to the page.
+
 ## Swapping in a better image
 1. Export it at about 1600px on its longest side as WebP or JPEG (quality ~80).
 2. Put it in `images/` and change the `src` (and `width`/`height`) on the matching `<img>` in the project page.

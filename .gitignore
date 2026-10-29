@@ -7,6 +7,9 @@ cinema.css
 cinema.js
 brand/
 
+# Private layout tool for arranging gallery photos (open it on this computer only)
+arrange.html
+
 # System files
 Thumbs.db
 .DS_Store
