@@ -49,8 +49,8 @@
     #work .picker-caption { width: min(40vw, 560px); text-align: left; }
     #work .picker-caption h2 { font-style: normal; font-size: 22px; letter-spacing: .14em; color: #e6e6e6; }   /* the credential's spaced-out style, in normal case */
     #work .picker-caption .specimen { margin-top: 2px; }
-    /* The project title starts at 50% and comes up to full as the visitor scrolls down to the work */
-    #work .picker-caption h2 { opacity: var(--title-o, .5); }
+    /* The project title and its label start hidden and come up to full as the visitor scrolls down to the work */
+    #work .picker-caption h2, #work .picker-caption .specimen { opacity: var(--title-o, 0); }
     @media (max-width: 640px) { #work .picker-caption { width: 72vw; } }
     /* "Selected work" moves to the right-hand corner */
     #work .picker-label { left: auto; right: var(--gutter); text-align: right; }
@@ -566,11 +566,12 @@
       })(t0);
     }));
 
-    // Title opacity follows the scroll: 50% at the top of the page, 100% once the work is in place
+    // Title and label opacity follow the scroll: 0% at the top, easing in to full by two-thirds of the way down of the page, 100% once the work is in place
     function titleFade() {
       const root = document.documentElement, end = Math.min(scrollY + picker.getBoundingClientRect().top, root.scrollHeight - root.clientHeight);
-      const k = end > 0 ? Math.min(Math.max(scrollY / end, 0), 1) : 1;
-      picker.style.setProperty('--title-o', (0.5 + 0.5 * k).toFixed(3));
+      const k = end > 0 ? Math.min(Math.max(scrollY / (end * 0.66), 0), 1) : 1;
+      const o = k * k * (3 - 2 * k);                           // eased: soft start, soft arrival
+      picker.style.setProperty('--title-o', o.toFixed(3));
     }
     addEventListener('scroll', titleFade, { passive: true });
     addEventListener('resize', titleFade);
