@@ -6,6 +6,8 @@ cinema-trials.html
 cinema.css
 cinema.js
 brand/
+home-test.html
+type-test.css
 
 # Private layout tool for arranging gallery photos (open it on this computer only)
 arrange.html
@@ -13,3 +15,8 @@ arrange.html
 # System files
 Thumbs.db
 .DS_Store
+home-saved-v1.html
+type-saved-v1.css
+home-specimen.html
+home-saved-v2.html
+type-saved-v2.css

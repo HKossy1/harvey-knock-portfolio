@@ -1,0 +1,14 @@
+/* Page-to-page transitions (browsers without support just load the page as normal).
+   The same motion both ways, into a project and back out: the page you leave dims and
+   eases back a touch, and after a short breath the new page settles towards you, from
+   just in front, on a long soft ease (fast at first, a slow tail).
+   Transform and opacity only, so it stays smooth. */
+
+@view-transition { navigation: auto; }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+
+::view-transition-old(root) { animation: step-out .5s cubic-bezier(.4, 0, .2, 1) both; }
+::view-transition-new(root) { animation: step-in .95s cubic-bezier(.16, 1, .3, 1) .12s both; }
+
+@keyframes step-out { to   { opacity: 0; transform: scale(.98); } }
+@keyframes step-in  { from { opacity: 0; transform: scale(1.05); } }

@@ -33,6 +33,7 @@ uniform float u_freq;
 uniform float u_speed;
 uniform float u_amp;
 uniform float u_zoom;
+uniform float u_fade;
 varying vec2 vTexCoord;
 void main(){
   vec2 uv = vec2(vTexCoord.x, 1.0 - vTexCoord.y);
@@ -46,7 +47,10 @@ void main(){
   float dist = length(delta);
   float wave = sin(dist * u_freq - u_time * u_speed);
   vec2 uv2 = uv + normalize(delta) * wave * u_amp;
-  gl_FragColor = texture2D(u_texture, uv2);
+  // Zoomed out past the photo's edges (data-zoom below 1), it fades softly into black
+  float edge = min(min(uv2.x, 1.0 - uv2.x), min(uv2.y, 1.0 - uv2.y));
+  float m = u_fade > 0.0 ? smoothstep(0.0, u_fade, edge) : 1.0;
+  gl_FragColor = vec4(texture2D(u_texture, clamp(uv2, 0.0, 1.0)).rgb * m, 1.0);
 }`;
 
 function ripples(el) {
@@ -58,12 +62,16 @@ function ripples(el) {
     const start = performance.now();
     const target = () => (slider ? parseFloat(slider.value) : 0.2);
     const mix = (a, b, k) => a + (b - a) * k;
+    const zoomBase = parseFloat(el.dataset.zoom || 1);
+    const breatheBy = parseFloat(el.dataset.breathe ?? 0.25);
+    const fade = parseFloat(el.dataset.fade || 0);
 
     // The slider drifts on its own: up to the top and back down to its starting
     // value over 30 seconds, then rests for 30 seconds, and repeats. Moving the
     // slider by hand hands control to the visitor for good.
     const base = slider ? parseFloat(slider.value) : 0.2;
-    const RISE_FALL = 30, REST = 30, DELAY = 30;           // seconds; rests 30s after the page opens
+    const RISE_FALL = 30, REST = 30;                       // seconds
+    const DELAY = parseFloat(el.dataset.delay ?? 30);       // rests this long after the page opens (data-delay)
     let autoDrift = !!slider && !stillMotion;
     if (slider) slider.addEventListener('input', (e) => { if (e.isTrusted) autoDrift = false; placeThumb(); });
 
@@ -100,7 +108,7 @@ function ripples(el) {
 
       // Fade in from stillness over the first few seconds, then follow the slider gently
       if (autoDrift) { slider.value = drift(t); placeThumb(); }
-      const intro = Math.min(t / 6, 1);
+      const intro = Math.min(t / Math.min(6, DELAY || 6), 1);
       const ease = intro * intro * (3 - 2 * intro);
       if (!stillMotion) level += (target() * ease - level) * Math.min(dt * 1.5, 1);
 
@@ -116,7 +124,9 @@ function ripples(el) {
       sh.setUniform('u_texture', img);
       sh.setUniform('u_freq', mix(30, 70, level) * mix(0.85, 1.15, breathe(0.2, 0)));
       sh.setUniform('u_amp', mix(0.0015, 0.028, level) * mix(0.6, 1, breathe(0.1, 2.0)));
-      sh.setUniform('u_zoom', mix(1.0, 1.25, breathe(0.05, 3.0)));
+      // data-zoom: below 1 shows more of the photo; data-breathe: how far it slowly drifts in
+      sh.setUniform('u_zoom', zoomBase * mix(1.0, 1 + breatheBy, breathe(0.05, 3.0)));
+      sh.setUniform('u_fade', fade);
       p.rect(-p.width / 2, -p.height / 2, p.width, p.height);
     };
   };

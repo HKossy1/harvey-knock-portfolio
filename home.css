@@ -1,0 +1,82 @@
+/* Home page typography and layout (loaded by index.html after style.css).
+
+   The idea: a quieter, more bookish voice.
+   - Labels and navigation in very small, widely spaced capitals (a printer's caption)
+   - Italics for the human touches: disciplines, the section heading, a line of intent
+   - One consistent scale, balanced headings, careful line lengths and leading */
+
+:root {
+  --label: 11px;           /* every small label uses this size and spacing */
+  --label-track: .17em;
+  --body: 17px;
+}
+
+body {
+  font-kerning: normal;
+  font-feature-settings: "kern", "liga", "calt";
+  text-rendering: optimizeLegibility;
+  hanging-punctuation: first;
+}
+h1, h2, h3 { text-wrap: balance; letter-spacing: -.005em; }
+p { text-wrap: pretty; }
+
+/* Links: a hairline underline that settles in, rather than a heavy rule */
+a:hover, a:focus-visible { text-decoration-thickness: 1px; text-underline-offset: 5px; text-decoration-color: rgba(255,255,255,.45); }
+
+/* ---- Small spaced capitals: navigation, labels, numbers, meta ---- */
+.site-header nav a,
+.hero .credential,
+.ripple-control > span:first-child,
+.picker-hint,
+.project-meta,
+.section-label,
+.project-nav a,
+.book-hint, .book-count, #book-count {
+  font-size: var(--label);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.site-header { padding-top: 10px; padding-bottom: 10px; }   /* a slim band, 48px */
+.site-header .name { font-size: 18px; letter-spacing: .01em; }
+.site-header nav { gap: 34px; }
+.site-header nav a { color: #cfcfcf; }
+.site-header nav a:hover { color: #fff; }
+/* The footer stays in normal case (an email address in capitals shouts), small and italic */
+footer { color: var(--muted); padding-top: 40px; font-size: 14px; font-style: italic; letter-spacing: .01em; }
+
+/* ---- Home ---- */
+.hero h1 { font-size: clamp(44px, 6.2vw, 70px); letter-spacing: -.01em; margin-bottom: 18px; }
+/* No rule: the credential itself underlines the name, sitting close beneath it */
+.hero h1::after { display: none; }
+.hero h1 { margin-bottom: 0; line-height: 1.05; }
+.hero .statement { margin: 18px 0 0; font-style: italic; font-size: 19px; color: #e4e4e4; letter-spacing: .005em; }
+.hero .credential { margin-top: 30px; color: #c9c9c9; }
+
+/* a little more room below the caption, so the progress line never meets "View project" */
+/* The work section: a quiet label in the corner, the projects higher, and a caption of
+   just two lines (title, discipline) with the count beside the progress line */
+section.picker { height: max(680px, min(92vh, 840px)); }
+section.picker .picker-card, section.picker .picker-arrow { top: 41%; }
+section.picker .picker-caption { top: calc(41% + min(15vw, 210px) + 30px); }
+section.picker .picker-ticks { bottom: auto; top: calc(41% + min(15vw, 210px) + 150px); }
+section.picker .picker-hint { bottom: auto; top: calc(41% + min(15vw, 210px) + 146px); }
+section.picker .picker-label {
+  top: 26px; left: var(--gutter); right: auto; text-align: left;
+  font-size: var(--label); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--muted);
+}
+section.picker .picker-label::after { display: none; }
+.picker-caption h2 { font-size: clamp(32px, 3.4vw, 46px); margin: 0 0 2px; }
+.picker-caption h2 a { font-size: inherit; display: inline; margin: 0; text-decoration: none; letter-spacing: inherit; text-transform: none; }
+.picker-caption h2 a .go { display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity .35s, transform .35s; }
+.picker-caption h2 a:hover .go, .picker-caption h2 a:focus-visible .go { opacity: .8; transform: none; }
+.picker-caption small { font-style: italic; font-size: 18px; letter-spacing: .005em; color: #bdbdbd; }
+.picker-count { margin-left: 14px; font-size: var(--label); letter-spacing: var(--label-track); color: var(--muted); }
+
+/* ---- Project pages ---- */
+.project h1 { font-size: clamp(38px, 4.4vw, 54px); margin: 6px 0 16px; }
+.project-meta { color: var(--muted); line-height: 2; margin: 0 0 22px; }
+.project .caption { font-size: var(--body); line-height: 1.68; color: #d8d8d8; max-width: 33rem; }
+.project .caption + .caption { margin-top: -14px; }
+.section-label { color: var(--muted); margin-top: 56px; }
+.project-nav { border-top-color: #262626; padding-top: 22px; }

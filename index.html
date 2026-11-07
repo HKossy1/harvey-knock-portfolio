@@ -19,15 +19,174 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="step-in.css">
+  <link rel="stylesheet" href="home.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    /* Specimen labels: each project captioned like a museum or lab specimen. Data in a
+       monospace (the precise, scientific voice), the plant's Latin name in italic serif */
+    .specimen { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11.5px; letter-spacing: .02em;
+      color: #a8a8a8; line-height: 1.7; margin-top: 6px; }
+    .specimen .no { color: #e6e6e6; }
+    .specimen .sep { color: #555; margin: 0 .55em; }
+    .specimen .species { font-family: var(--serif); font-style: italic; font-size: 16px; letter-spacing: .01em; color: #d6d6d6; }
+    .picker-count { display: none; }
+
+    /* Title and label above the chosen image: the row of projects drops lower, the caption
+       sits in the space over the centre card, and the progress line follows below the row */
+    /* Sized to its contents rather than the window, so there's no dead black above or below:
+       label, caption (~96px) and the row all sit close, the section ends just past the ticks */
+    #work { --half: min(15vw, 210px); --mid: calc(196px + var(--half)); height: calc(var(--mid) + var(--half) + 96px); }
+    #work .picker-card, #work .picker-arrow { top: var(--mid); }
+    #work .picker-caption { top: auto; bottom: calc(100% - var(--mid) + var(--half) + 26px); }
+    #work .picker-caption h2 { margin: 0 0 4px; }
+    #work .picker-ticks { top: calc(var(--mid) + var(--half) + 40px); }
+    #work .picker-hint { top: calc(var(--mid) + var(--half) + 36px); }
+    @media (max-width: 640px) { #work { --half: 27vw; } }
+
+    /* Project title set apart from the name in the hero: italic, and aligned to the left
+       edge of the chosen image rather than centred under the name */
+    #work .picker-caption { width: min(40vw, 560px); text-align: left; }
+    #work .picker-caption h2 { font-style: normal; font-size: 22px; letter-spacing: .14em; color: #e6e6e6; }   /* the credential's spaced-out style, in normal case */
+    #work .picker-caption .specimen { margin-top: 2px; }
+    @media (max-width: 640px) { #work .picker-caption { width: 72vw; } }
+    /* "Selected work" moves to the right-hand corner */
+    #work .picker-label { left: auto; right: var(--gutter); text-align: right; }
+
+    /* Hover to browse: no arrows; resting the mouse on a side project glides it to the front */
+    #work .picker-arrow { display: none; }
+    /* The projects beside the front at 80% colour (full brightness); the front at full colour.
+       The change eases over the same second as the glide */
+    #work .picker-card img { filter: saturate(.8) !important; transition: filter 1s ease; }
+    #work .picker-card[data-o="0"] img { filter: none !important; }
+    /* REGENERATE as a book: the type block, 10px clear of the lettering, becomes a cover lying
+       on the white. A soft layered shadow lifts it, a faint hinge runs down the left like a
+       hardback's spine, and two hairlines at the right and bottom edges suggest the pages */
+    #work .picker-card .type-frame { position: absolute; pointer-events: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,.2), 0 6px 14px rgba(0,0,0,.19), 0 20px 36px -10px rgba(0,0,0,.36);
+      background:
+        linear-gradient(to right, rgba(0,0,0,.10) 0, rgba(0,0,0,.025) 2.4%, rgba(255,255,255,.5) 3%, rgba(0,0,0,.05) 3.8%, transparent 6.5%),
+        linear-gradient(160deg, rgba(255,255,255,0) 40%, rgba(0,0,0,.035)); }
+    #work .picker-card .type-frame::before { content: ""; position: absolute; top: 3px; left: 3px; right: -3px; bottom: -3px;
+      border-right: 1px solid rgba(0,0,0,.14); border-bottom: 1px solid rgba(0,0,0,.14); }
+    #work .picker-card .type-frame::after { content: ""; position: absolute; top: 5px; left: 5px; right: -5px; bottom: -5px;
+      border-right: 1px solid rgba(0,0,0,.09); border-bottom: 1px solid rgba(0,0,0,.09); }
+    /* No backing and no drop shadow: cut-out images (the fanned books, the Anthurium) float
+       freely on the page, and nothing darkens the edges of the neighbouring cards */
+    #work .picker-card { background: none; box-shadow: none; }
+    /* A one-time hint, if the visitor lingers without touching the carousel: the whole row
+       leans a little to the left and back, as if the next project on the right were about
+       to come forward. Uses the separate translate property, so the card positions are untouched */
+    #work.hinting .picker-card:not(.away) { animation: pickerHint 1.8s cubic-bezier(.45, 0, .3, 1) both; }
+    /* Living thumbnails: the moving projects come alive once they reach the front */
+    #work .picker-card .live { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+      opacity: 0; transition: opacity .9s ease; pointer-events: none; }
+    #work .picker-card .live.on { opacity: 1; }
+
+    /* View cue: over the front project the cursor becomes a hairline ring reading "View" */
+    .view-cue { position: fixed; left: 0; top: 0; z-index: 20; width: 60px; height: 60px; margin: -30px 0 0 -30px;
+      border-radius: 50%; border: 1px solid rgba(255,255,255,.6); background: rgba(0,0,0,.14);
+      display: grid; place-items: center; padding-left: .22em; box-sizing: border-box;
+      font-size: 9.5px; letter-spacing: .22em; text-transform: uppercase; color: #fff;
+      pointer-events: none; opacity: 0; scale: .55; transition: opacity .35s ease, scale .45s cubic-bezier(.2, .7, .2, 1); }
+    .view-cue.on { opacity: 1; scale: 1; }
+    #work.viewing .picker-card[data-o="0"] { cursor: none; }
+
+    /* "Selected work" kept for screen readers only: the titles already say what this is */
+    #work .picker-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+    @keyframes pickerHint { 0%, 100% { translate: 0 0; } 42% { translate: -34px 0; } }
+    #work .picker-card { transition: transform 1s cubic-bezier(.35, .2, .3, 1), opacity .7s ease, filter .7s ease; }   /* an even, steady glide: gentle start, near-constant middle, soft landing */
+  </style>
+  <style>
+    /* Rolling project selector: the chosen project large and in front, the others stepping
+       away on a gentle arc, slightly smaller and quieter the further they are */
+    /* A shorter hero, so the work peeks in below it and reads as the main event */
+    .hero { min-height: 64vh; }
+
+    /* No black band: the name and links float in white over the top of the ripple */
+    body > .site-header { position: absolute; top: 0; left: 0; right: 0; z-index: 3; background: none; }
+    body > .site-header a { color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,.55); }
+    body > .site-header nav a { color: rgba(255,255,255,.9); }
+    /* Work and About sit beside the name; Contact keeps the right-hand corner */
+    .site-header .header-left { display: flex; align-items: baseline; gap: 44px; }
+    @media (max-width: 640px) {
+      .site-header .header-left { gap: 20px; }
+      .site-header nav { gap: 18px; }
+      .site-header .name { font-size: 16px; }
+    }
+
+    /* The ripple is only as tall as it needs to be for the first screen to end a third of the
+       way down the chosen project's image. 196px is where that image starts in the work
+       section; a third of the image is min(10vw, 140px) */
+    .hero { min-height: 340px; height: calc(100svh - 196px - min(10vw, 140px)); }
+    @media (max-width: 640px) { .hero { height: calc(100svh - 196px - 18vw); } }
+    .picker { position: relative; height: max(640px, min(92vh, 820px)); overflow: hidden; outline: none; touch-action: pan-y; }
+    /* The section's heading: same serif as the name, one level down */
+    .picker-label { position: absolute; top: 34px; left: 0; right: 0; text-align: center; margin: 0; font-weight: 400; font-size: clamp(22px, 2.2vw, 28px); color: var(--fg); }
+    .picker-label::after { content: ""; display: block; width: 3rem; height: 1px; background: var(--fg); opacity: .5; margin: 14px auto 0; }
+    .picker-stage { position: absolute; inset: 0; }
+    .picker-card {
+      --w: min(40vw, 560px);
+      position: absolute; left: 50%; top: 45%; width: var(--w); aspect-ratio: 4 / 3; margin: 0;
+      transform: translate(-50%, -50%); overflow: hidden; cursor: pointer;
+      transition: transform .75s cubic-bezier(.22,.7,.2,1), opacity .6s ease, filter .6s ease;
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+    }
+    .picker-card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter .6s ease; }
+    .picker-card[data-o="0"] { z-index: 5; cursor: pointer; }
+    .picker-card[data-o="0"] img { filter: none; }
+    /* Side projects keep their full colour, dimming gently with distance */
+    .picker-card[data-o="1"] img, .picker-card[data-o="-1"] img { filter: brightness(.78); }
+    .picker-card[data-o="2"] img, .picker-card[data-o="-2"] img { filter: brightness(.6); }
+    .picker-card[data-o="3"] img, .picker-card[data-o="-3"] img { filter: brightness(.45); }
+    .picker-card[data-o="1"], .picker-card[data-o="-1"] { z-index: 4; }
+    .picker-card[data-o="2"], .picker-card[data-o="-2"] { z-index: 3; }
+    .picker-card[data-o="3"], .picker-card[data-o="-3"] { z-index: 2; }
+    .picker-card.away { opacity: 0; pointer-events: none; z-index: 1; }
+
+    .picker-caption { position: absolute; left: 50%; top: calc(45% + min(15vw, 210px) + 26px); transform: translateX(-50%); width: min(90vw, 640px); text-align: center; }
+    .picker-caption .num { font-size: 14px; color: var(--muted); letter-spacing: .1em; }
+    .picker-caption h2 { font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); margin: 4px 0 6px; }
+    .picker-caption small { font-size: 15px; color: var(--muted); letter-spacing: .04em; }
+    .picker-caption a { display: inline-block; margin-top: 14px; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; text-decoration-color: rgba(255,255,255,.35); }
+    .picker-caption.swap { animation: pickerFade .6s ease; }
+    @keyframes pickerFade { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+    /* Quiet arrows: thin chevrons that only brighten on hover */
+    .picker-arrow { position: absolute; top: 45%; transform: translateY(-50%); z-index: 6; background: none; border: 0; padding: 14px; cursor: pointer; color: #fff; opacity: .28; transition: opacity .3s; }
+    .picker-arrow:hover, .picker-arrow:focus-visible { opacity: .85; }
+    .picker-arrow svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.2; display: block; }
+    .picker-arrow.prev { left: calc(50% - min(20vw, 280px) - 52px); }
+    .picker-arrow.next { left: calc(50% + min(20vw, 280px) + 2px); }
+
+    .picker-ticks { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; }
+    .picker-ticks button { width: 26px; height: 12px; padding: 0; border: 0; background: none; cursor: pointer; position: relative; }
+    .picker-ticks button::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(255,255,255,.28); transition: all .4s; }
+    .picker-ticks button[aria-current="true"] { width: 46px; }
+    .picker-ticks button[aria-current="true"]::after { height: 2px; margin-top: -.5px; background: #fff; }
+    .picker-hint { position: absolute; right: var(--gutter); bottom: 18px; font-size: 13px; color: var(--muted); }
+
+    @media (max-width: 640px) {
+      .picker { height: 82vh; }
+      .picker-card { --w: 72vw; top: 38%; }
+      .picker-caption { top: calc(38% + 27vw + 18px); }
+      .picker-arrow { display: none; }
+      .picker-hint { display: none; }
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
-    <a class="name" href="index.html">Harvey Knock</a>
-    <nav><a href="#work">Work</a><a href="about.html">About</a><a href="mailto:knock.harvey@gmail.com">Contact</a></nav>
+    <div class="header-left">
+      <a class="name" href="index.html">Harvey Knock</a>
+      <nav><a href="#work">Work</a><a href="about.html">About</a></nav>
+    </div>
+    <nav><a href="mailto:knock.harvey@gmail.com">Contact</a></nav>
   </header>
 
   <section class="hero">
-    <div class="hero-sketch" data-sketch="ripples" data-src="images/home-geranium.webp" aria-hidden="true"></div>
+    <div class="hero-sketch" data-sketch="ripples" data-src="images/home-geranium.webp" data-zoom="1" data-breathe="0.04" data-delay="3.5" aria-hidden="true"></div>
     <label class="ripple-control">
       <span>Ripple</span>
       <span class="ripple-track">
@@ -36,48 +195,415 @@
       </span>
     </label>
     <div class="hero-text">
-      <h1>Harvey Knock</h1>
-      <p class="credential">First Class Honours, Graphic Design, Falmouth University</p>
+      <h1>Harvey Knock</h1>      <p class="credential">First Class Honours : Graphic Design : Falmouth University</p>
     </div>
   </section>
 
-  <ol class="work-list" id="work">
-    <li><a href="natural-design.html">
-      <figure><img src="images/p2-03.webp" alt="Natural Design publication cover with a white flower"></figure>
-      <span class="num">01</span><span class="title">Natural Design</span><small>Publication</small>
-    </a></li>
-    <li><a href="coded-visuals.html">
-      <figure><img src="images/p4-03.webp" alt="Flower photograph transformed into rotating rings"></figure>
-      <span class="num">02</span><span class="title">Coded Visuals</span><small>Creative coding</small>
-    </a></li>
-    <li><a href="living-puzzles.html">
-      <figure><img src="images/p5-04.webp" alt="Living Cycle puzzle of clover leaves" loading="lazy"></figure>
-      <span class="num">03</span><span class="title">Living Puzzles</span><small>Object</small>
-    </a></li>
-    <li><a href="parallel-perceptions.html">
-      <figure><img src="images/p6-05.webp" alt="Pink Anthurium with projected light ripples" loading="lazy"></figure>
-      <span class="num">04</span><span class="title">Parallel Perceptions</span><small>Installation</small>
-    </a></li>
-    <li><a href="interactive-geometry.html">
-      <figure><img src="images/p7-03.webp" alt="Gesture-driven geometry projected in a dark room" loading="lazy"></figure>
-      <span class="num">05</span><span class="title">Interactive Geometry</span><small>Interaction</small>
-    </a></li>
-    <li><a href="horneywink-cider.html">
-      <figure><img src="images/p9-01-card.webp" alt="Horneywink H and lapwing emblem in gold foil" loading="lazy"></figure>
-      <span class="num">06</span><span class="title">Horneywink Cider</span><small>Client brand</small>
-    </a></li>
-    <li><a href="regenerate.html">
-      <figure><img src="images/regenerate-card.webp" alt="REGENERATE magazine cover" loading="lazy"></figure>
-      <span class="num">07</span><span class="title">REGENERATE</span><small>Publication</small>
-    </a></li>
-    <li><a href="composing-a-feeling.html">
-      <figure><img src="videos/a-little-home-card-end.webp" alt="Still from the end of A Little Home: sunlight breaking through pink flowers" loading="lazy"></figure>
-      <span class="num">08</span><span class="title">Composing a Feeling</span><small>Film &amp; sound</small>
-    </a></li>
-  </ol>
+  <section class="picker" id="work" tabindex="0" aria-roledescription="carousel" aria-label="Selected work">
+    <h2 class="picker-label">Selected work</h2>
+    <div class="picker-stage"></div>
+    <button class="picker-arrow prev" aria-label="Previous project"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button>
+    <button class="picker-arrow next" aria-label="Next project"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8"/></svg></button>
+    <div class="picker-caption" aria-live="polite"></div>
+    <div class="picker-ticks"></div>
+    <span class="picker-hint">Hover to browse, or use ← →</span>
+  </section>
 
   <footer><a href="mailto:knock.harvey@gmail.com">knock.harvey@gmail.com</a> · Somerset, UK</footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.8/p5.min.js" defer></script>
-  <script src="puzzles.js" defer></script>
+  <script src="puzzles.js?v=zoom2" defer></script>
+  <script>
+  (function () {
+    // Specimen details from each project page; species only where the page names the plant
+    const DETAILS = [
+      // [discipline, detail, plant]: four words at most after the specimen number
+      ['Publication', 'Photography · writing'],
+      ['Creative coding', 'p5.js'],
+      ['Object', 'Laser-cut acrylic'],
+      ['Installation', 'TouchDesigner', 'Anthurium'],
+      ['Interaction', 'TouchDesigner · MediaPipe'],
+      ['Client brand', 'Illustrator · Blender'],
+      ['Publication', 'Franklin Gothic'],
+      ['Film & sound', 'Original scores'],
+    ];
+    const PROJECTS = [
+      ['natural-design.html', 'images/p2-03.webp', 'Natural Design', 'Publication', 'Natural Design publication cover with a white flower'],
+      ['coded-visuals.html', 'images/p4-03.webp', 'Coded Visuals', 'Creative coding', 'Flower photograph transformed into rotating rings'],
+      ['living-puzzles.html', 'images/p5-04.webp', 'Living Puzzles', 'Object', 'Living Cycle puzzle of clover leaves'],
+      ['parallel-perceptions.html', 'images/p6-05.webp', 'Parallel Perceptions', 'Installation', 'Pink Anthurium with projected light ripples'],
+      ['interactive-geometry.html', 'images/p7-03.webp', 'Interactive Geometry', 'Interaction', 'Gesture-driven geometry projected in a dark room'],
+      ['horneywink-cider.html', 'images/p9-01-card.webp', 'Horneywink Cider', 'Client brand', 'Horneywink H and lapwing emblem in gold foil'],
+      ['regenerate.html', 'images/regenerate-card.webp', 'REGENERATE', 'Publication', 'REGENERATE magazine cover'],
+      ['composing-a-feeling.html', 'videos/a-little-home-card-end.webp', 'Composing a Feeling', 'Film & sound', 'Still from the end of A Little Home: sunlight breaking through pink flowers'],
+    ];
+    const N = PROJECTS.length;
+    // Type frames: the text block's edges as fractions of the thumbnail (measured from the image)
+    const TYPE_FRAMES = { 6: [0.2319, 0.1058, 0.7813, 0.8867] };
+    const picker = document.getElementById('work');
+    const stage = picker.querySelector('.picker-stage');
+    const caption = picker.querySelector('.picker-caption');
+    const ticks = picker.querySelector('.picker-ticks');
+    let current = 0;
+
+    // Each step away from the centre: sideways distance, drop down the arc, and scale
+    // (sideways and drop are fractions of the chosen card's width)
+    const STEPS = { 0: [0, 0, 1], 1: [0.74, 0, 0.58], 2: [1.15, 0, 0.4], 3: [1.43, 0, 0.29] };   // straight row: no drop
+
+    const cards = PROJECTS.map(([href, src, title, kind, alt], i) => {
+      const f = document.createElement('figure');
+      f.className = 'picker-card';
+      f.innerHTML = `<img src="${src}" alt="${alt}"${i > 3 && i < N - 3 ? ' loading="lazy"' : ''}>`;
+      f.addEventListener('click', () => {
+        const o = offset(i);
+        if (o === 0) location.href = href; else go(current + o);
+      });
+      if (TYPE_FRAMES[i]) {
+        const [l, t, r, b] = TYPE_FRAMES[i], fr = document.createElement('span');
+        fr.className = 'type-frame'; fr.setAttribute('aria-hidden', 'true');
+        Object.assign(fr.style, { left: `calc(${l * 100}% - 10px)`, top: `calc(${t * 100}% - 10px)`,
+          right: `calc(${(1 - r) * 100}% - 10px)`, bottom: `calc(${(1 - b) * 100}% - 10px)` });
+        f.appendChild(fr);
+      }
+      stage.appendChild(f);
+      return f;
+    });
+    ticks.innerHTML = PROJECTS.map((p, i) => `<button aria-label="${p[2]}"></button>`).join('');
+    ticks.querySelectorAll('button').forEach((b, i) => b.addEventListener('click', () => go(i)));
+    const count = document.createElement('span');
+    count.className = 'picker-count';
+    ticks.appendChild(count);
+
+    // The shortest way round the ring from the chosen project, -4..3
+    function offset(i) { let o = ((i - current) % N + N) % N; if (o > N / 2) o -= N; return o; }
+
+    // Where a card sits at a given offset; beyond ±3 it waits just past the edge on `side`
+    function place(o, side, w) {
+      const a = Math.abs(o);
+      if (a > 3) return `translate(calc(-50% + ${side * 1.75 * w}px), -50%) scale(0.2)`;
+      const [sx, sy, s] = STEPS[a];
+      return `translate(calc(-50% + ${Math.sign(o) * sx * w}px), calc(-50% + ${sy * w}px)) scale(${s})`;
+    }
+    function layout(instant) {
+      const w = cards[0].offsetWidth;                // layout width, unaffected by the scaling
+      cards.forEach((c, i) => {
+        const o = offset(i), a = Math.abs(o), prev = c._o;
+        c.dataset.o = a <= 3 ? o : 'x';
+        c.classList.toggle('away', a > 3);
+        if (a > 3) {
+          // leaving: slide out past the edge it was nearest, fading as it goes
+          c.style.transform = place(o, Math.sign(prev ?? o) || 1, w);
+        } else {
+          if (prev !== undefined && Math.abs(prev) > 3 && !instant) {
+            // arriving from the other end: jump unseen to this side's edge first, then slide in
+            c.style.transition = 'none';
+            c.style.transform = place(4, Math.sign(o), w);
+            void c.offsetWidth;
+            c.style.transition = '';
+          }
+          c.style.transform = place(o, 0, w);
+        }
+        c._o = o;
+      });
+    }
+    function setCaption(animate) {
+      const [href, , title, kind] = PROJECTS[current];
+      // Just the title (itself the link, an arrow appearing on hover) and the discipline;
+      // the count sits with the progress line
+      // The specimen number, then four words at most: discipline, detail, and the plant where named
+      const [k, detail, species] = DETAILS[current];
+      const sep = '<span class="sep">—</span>';
+      const words = (s) => s.split(/\s+/).filter((w) => /\w/.test(w)).length;
+      const parts = [k];
+      if (detail && words(`${k} ${detail}`) <= 4) parts.push(detail);
+      if (species && words(`${parts.join(' ')} ${species}`) <= 4) parts.push(`<span class="species">${species}</span>`);
+      parts.unshift(`<span class="no">No. ${String(current + 1).padStart(2, '0')}</span>`);
+      caption.innerHTML = `<h2><a href="${href}">${title}<span class="go" aria-hidden="true"> →</span></a></h2><div class="specimen">${parts.join(sep)}</div>`;
+      count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(N).padStart(2, '0')}`;
+      if (animate) { caption.classList.remove('swap'); void caption.offsetWidth; caption.classList.add('swap'); }
+      ticks.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-current', i === current));
+    }
+    // Hover to browse: when the mouse comes to rest (180ms) on a side project, it glides to
+    // the front. After each move there's a one-second grace period for the hand to settle:
+    // nothing the mouse does in that second moves the carousel, and afterwards it only moves
+    // again once the mouse has moved and rested anew. Cards sliding under a still cursor
+    // never set anything off
+    const GRACE = 1000;
+    let lastX = null, lastY = null, hoverTimer = null, settleUntil = 0;
+    stage.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      const moved = lastX === null || Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY) > 1;
+      lastX = e.clientX; lastY = e.clientY;
+      if (!moved) return;
+      clearTimeout(hoverTimer);
+      if (performance.now() < settleUntil) return;
+      const card = e.target.closest('.picker-card');
+      if (!card || card.classList.contains('away')) return;
+      const i = cards.indexOf(card);
+      if (offset(i) !== 0) hoverTimer = setTimeout(() => { settleUntil = performance.now() + GRACE; go(i); }, 180);
+    });
+    stage.addEventListener('pointerleave', () => clearTimeout(hoverTimer));
+
+    // The hint: 5 seconds after the work comes into view with no interaction, once per visit
+    let interacted = false, hintTimer = null;
+    const stopHint = () => { interacted = true; clearTimeout(hintTimer); picker.classList.remove('hinting'); };
+    // Only real use of the carousel counts: hovering a project, clicking, touching, or a
+    // sideways scroll. Scrolling down the page or the mouse resting in the black doesn't
+    picker.addEventListener('pointermove', (e) => { if (e.target.closest('.picker-card')) stopHint(); });
+    ['pointerdown', 'touchstart'].forEach((t) => picker.addEventListener(t, stopHint, { passive: true }));
+    picker.addEventListener('wheel', (e) => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) stopHint(); }, { passive: true });
+    addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') stopHint(); });
+    new IntersectionObserver(([e]) => {
+      clearTimeout(hintTimer);
+      if (interacted || !e.isIntersecting || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      hintTimer = setTimeout(() => {
+        if (interacted) return;
+        interacted = true;                                   // only ever once
+        picker.classList.add('hinting');
+        setTimeout(() => picker.classList.remove('hinting'), 1900);
+      }, 5000);
+    }, { threshold: 0.6 }).observe(picker);
+
+    // Living thumbnails. Coded Visuals: the thumbnail's own 20 rings turn slowly, each at its
+    // own speed (centre and ring width measured from images/p4-03.webp). Composing a Feeling:
+    // a seamless six-second silent loop from the film. Each starts once its card has glided
+    // to the front, fades in over the still, and stops again when it leaves.
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const LIVE = {
+      1: { rings: { cx: 0.4993, cy: 0.5002, ringW: 18.72, count: 20 } },
+      3: { pulse: { radius: 0.072,                         // centres of the projected rings in images/p6-05.webp
+        centres: [[0.1854, 0.5647], [0.3906, 0.7098], [0.5656, 0.7686], [0.7708, 0.5948], [0.3385, 0.4026], [0.5667, 0.3856]] } },
+      7: { video: 'videos/composing-loop.mp4' },
+    };
+
+    // Parallel Perceptions: the photo's own projected rings come alive, light pulsing
+    // outwards across each leaf as in the installation (WebGL; the photo is a cut-out on black)
+    function pulseLayer(card, spec) {
+      const img = card.querySelector('img');
+      const cv = document.createElement('canvas');
+      cv.className = 'live'; cv.setAttribute('aria-hidden', 'true'); card.appendChild(cv);
+      const gl = cv.getContext('webgl', { premultipliedAlpha: false, antialias: false });
+      if (!gl) return { el: cv, start() {}, stop() {} };
+      const n = spec.centres.length;
+      const vert = `attribute vec2 p; varying vec2 uv; void main(){ uv = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }`;
+      const frag = `precision mediump float;
+        varying vec2 uv;
+        uniform sampler2D photo;
+        uniform vec2 cover, offset;                  // card -> photo coordinates (object-fit: cover)
+        uniform float imgAspect, phase, breath, radius;
+        uniform vec2 centres[${n}];
+        void main(){
+          vec2 t = offset + uv * cover;
+          vec4 px = texture2D(photo, t);
+          // Leaves only: skip the pink spathes (reddish, little blue) and the empty background
+          float flower = smoothstep(.06, .2, px.r - px.g) * smoothstep(.1, -.05, px.b - px.r * .8);
+          float leaf = px.a * (1. - flower);
+          float glow = 0.;
+          for (int i = 0; i < ${n}; i++) {
+            float r = length((t - centres[i]) * vec2(1., 1. / imgAspect));
+            float rings = pow(.5 + .5 * sin(r * 230. - phase), 3.);
+            glow = max(glow, rings * smoothstep(radius, radius * .2, r));
+          }
+          vec3 lilac = vec3(.9, .55, 1.);
+          gl_FragColor = vec4(px.rgb + lilac * glow * leaf * breath * .55, px.a);   // keeps the cut-out's transparency
+        }`;
+      const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+      const prog = gl.createProgram();
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, vert)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, frag));
+      gl.linkProgram(prog); gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const U = (k) => gl.getUniformLocation(prog, k);
+      gl.uniform2fv(U('centres'), new Float32Array(spec.centres.flat()));
+      gl.uniform1f(U('radius'), spec.radius);
+      let ready = false, raf = null, last = 0, t = 0;
+      function load() {
+        const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        gl.uniform1i(U('photo'), 0);
+        gl.uniform1f(U('imgAspect'), img.naturalWidth / img.naturalHeight);
+        ready = true;
+      }
+      function frame(now) {
+        const dt = last ? Math.min((now - last) / 1000, 0.05) : 0; last = now; t += dt;
+        const dpr = Math.min(devicePixelRatio || 1, 2), W = Math.round(card.offsetWidth * dpr), H = Math.round(card.offsetHeight * dpr);
+        if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; gl.viewport(0, 0, W, H); }
+        const ia = img.naturalWidth / img.naturalHeight, ca = W / H;
+        const cover = ca > ia ? [1, ia / ca] : [ca / ia, 1];
+        gl.uniform2f(U('cover'), cover[0], cover[1]);
+        gl.uniform2f(U('offset'), (1 - cover[0]) / 2, (1 - cover[1]) / 2);
+        gl.uniform1f(U('phase'), t * 2.4);
+        // fades up over two seconds, then breathes slowly
+        gl.uniform1f(U('breath'), Math.min(t / 2, 1) * (0.7 + 0.3 * Math.sin(t * 0.9)));
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        raf = requestAnimationFrame(frame);
+      }
+      return {
+        el: cv,
+        start() { if (raf || !img.complete) return; if (!ready) load(); last = 0; t = 0; raf = requestAnimationFrame(frame); cv.classList.add('on'); },
+        stop() { cancelAnimationFrame(raf); raf = null; },
+      };
+    }
+    function ringsLayer(card, spec) {
+      const img = card.querySelector('img');
+      const cv = document.createElement('canvas');
+      cv.className = 'live'; cv.setAttribute('aria-hidden', 'true'); card.appendChild(cv);
+      const ctx = cv.getContext('2d');
+      const speeds = Array.from({ length: spec.count }, (_, i) => (i % 2 ? 1 : -1) * (0.04 + Math.random() * 0.1));
+      const angles = speeds.map(() => 0);
+      let raf = null, last = 0, t = 0;
+      function frame(now) {
+        const dt = last ? Math.min((now - last) / 1000, 0.05) : 0; last = now; t += dt;
+        const dpr = Math.min(devicePixelRatio || 1, 2), W = Math.round(card.offsetWidth * dpr), H = Math.round(card.offsetHeight * dpr);
+        if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+        const iw = img.naturalWidth, ih = img.naturalHeight, s = Math.max(W / iw, H / ih);
+        const ox = (W - iw * s) / 2, oy = (H - ih * s) / 2, cx = ox + spec.cx * iw * s, cy = oy + spec.cy * ih * s;
+        ctx.drawImage(img, ox, oy, iw * s, ih * s);
+        const ease = Math.min(t / 2, 1);                       // the rings ease into motion
+        for (let i = 0; i < spec.count; i++) {
+          angles[i] += speeds[i] * ease * dt;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, (i + 1) * spec.ringW * s, 0, Math.PI * 2);
+          ctx.arc(cx, cy, i * spec.ringW * s, Math.PI * 2, 0, true);
+          ctx.clip();
+          ctx.translate(cx, cy); ctx.rotate(angles[i]); ctx.translate(-cx, -cy);
+          ctx.drawImage(img, ox, oy, iw * s, ih * s);
+          ctx.restore();
+        }
+        raf = requestAnimationFrame(frame);
+      }
+      return {
+        el: cv,
+        start() { if (!raf && img.complete) { last = 0; raf = requestAnimationFrame(frame); cv.classList.add('on'); } },
+        stop() { cancelAnimationFrame(raf); raf = null; },
+      };
+    }
+    function videoLayer(card, src) {
+      const v = document.createElement('video');
+      v.className = 'live'; v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none';
+      v.setAttribute('aria-hidden', 'true'); v.src = src; card.appendChild(v);
+      v.addEventListener('playing', () => v.classList.add('on'));
+      return { el: v, start() { v.play().catch(() => {}); }, stop() { v.pause(); } };
+    }
+    const live = {};
+    let liveTimer = null, workOnScreen = false;
+    function updateLive() {
+      clearTimeout(liveTimer);
+      Object.keys(live).forEach((k) => {
+        if (+k === current && workOnScreen) return;
+        const L = live[k];
+        L.el.classList.remove('on');
+        setTimeout(() => { if (+k !== current || !workOnScreen) L.stop(); }, 900);
+      });
+      const spec = LIVE[current];
+      if (!spec || reduceMotion || !workOnScreen) return;
+      liveTimer = setTimeout(() => {                         // once the glide has mostly landed
+        const L = live[current] || (live[current] = spec.video ? videoLayer(cards[current], spec.video) : spec.pulse ? pulseLayer(cards[current], spec.pulse) : ringsLayer(cards[current], spec.rings));
+        L.start();
+      }, 650);
+    }
+    new IntersectionObserver(([e]) => { workOnScreen = e.isIntersecting; updateLive(); }, { threshold: 0.25 }).observe(picker);
+
+    // View cue: a hairline ring reading "View" follows the mouse (with a little lag) over the
+    // front project only, so hovering the sides reads as browsing and the front as opening
+    // Switched off for now (set to true to bring it back)
+    const SHOW_VIEW_CUE = false;
+    const cue = SHOW_VIEW_CUE && matchMedia('(hover: hover) and (pointer: fine)').matches ? document.createElement('div') : null;
+    let cueOn = false;
+    function cueSet(on) { if (!cue || on === cueOn) return; cueOn = on; cue.classList.toggle('on', on); picker.classList.toggle('viewing', on); }
+    if (cue) {
+      cue.className = 'view-cue'; cue.textContent = 'View'; cue.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(cue);
+      let tx = 0, ty = 0, x = 0, y = 0, raf = null;
+      const tick = () => {
+        x += (tx - x) * 0.22; y += (ty - y) * 0.22;
+        cue.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.3 ? requestAnimationFrame(tick) : null;
+      };
+      stage.addEventListener('pointermove', (e) => {
+        if (e.pointerType !== 'mouse') return;
+        tx = e.clientX; ty = e.clientY;
+        const card = e.target.closest('.picker-card');
+        const front = !!card && card.dataset.o === '0';
+        if (front && !cueOn) { x = tx; y = ty; }              // appear right at the cursor
+        cueSet(front);
+        if (!raf) raf = requestAnimationFrame(tick);
+      });
+      stage.addEventListener('pointerleave', () => cueSet(false));
+      addEventListener('scroll', () => cueSet(false), { passive: true });
+    }
+
+    // "Work" in the header: a slow, even glide down to the projects rather than a jump.
+    // Any wheel, touch or key from the visitor takes over straight away
+    document.querySelectorAll('a[href="#work"]').forEach((a) => a.addEventListener('click', (e) => {
+      if (reduceMotion) return;
+      e.preventDefault();
+      const from = scrollY, to = Math.min(from + picker.getBoundingClientRect().top, document.documentElement.scrollHeight - innerHeight);   // never past the bottom, so the ease lands fully
+      const dur = Math.min(1800, 900 + Math.abs(to - from) * 0.9), t0 = performance.now();
+      const ease = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+      let stop = false;
+      const cancel = () => { stop = true; };
+      ['wheel', 'touchstart', 'keydown'].forEach((t) => addEventListener(t, cancel, { once: true, passive: true }));
+      (function step(now) {
+        if (stop) return;
+        const k = Math.min((now - t0) / dur, 1);
+        scrollTo(0, from + (to - from) * ease(k));
+        if (k < 1) requestAnimationFrame(step); else history.replaceState(null, '', '#work');
+      })(t0);
+    }));
+
+    function go(i) {
+      const next = ((i % N) + N) % N;
+      if (next === current) return;
+      current = next;
+      layout(); setCaption(true); updateLive(); cueSet(false);
+    }
+
+    picker.querySelector('.prev').addEventListener('click', () => go(current - 1));
+    picker.querySelector('.next').addEventListener('click', () => go(current + 1));
+
+    // Keys: arrows while the selector is on screen; Enter opens the chosen project
+    let visible = false;
+    new IntersectionObserver(([e]) => (visible = e.intersectionRatio > 0.5), { threshold: [0, 0.5, 1] }).observe(picker);
+    addEventListener('keydown', (e) => {
+      if (!visible || (e.target.closest && e.target.closest('input, textarea'))) return;
+      if (e.key === 'ArrowRight') { go(current + 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { go(current - 1); e.preventDefault(); }
+      if (e.key === 'Enter' && document.activeElement === picker) location.href = PROJECTS[current][0];
+    });
+
+    // Sideways scrolling (trackpads, or Shift + wheel) moves one project per gesture
+    let wheelLock = 0;
+    picker.addEventListener('wheel', (e) => {
+      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+      if (!dx) return;
+      e.preventDefault();
+      const now = performance.now();
+      if (now - wheelLock < 450 || Math.abs(dx) < 8) return;
+      wheelLock = now;
+      go(current + (dx > 0 ? 1 : -1));
+    }, { passive: false });
+
+    // Swipe or drag sideways
+    let startX = null, startY = 0, dragged = false;
+    picker.addEventListener('pointerdown', (e) => { startX = e.clientX; startY = e.clientY; dragged = false; });
+    addEventListener('pointerup', (e) => {
+      if (startX === null) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      startX = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) { dragged = true; go(current + (dx < 0 ? 1 : -1)); }
+    });
+    // A swipe shouldn't also count as a click on a card
+    picker.addEventListener('click', (e) => { if (dragged) { e.stopPropagation(); dragged = false; } }, true);
+
+    addEventListener('resize', layout);
+    layout(); setCaption(false);
+    window.__reel = { go, get current() { return current; } };
+  })();
+  </script>
 </body>
 </html>
