@@ -124,6 +124,11 @@
        section; a third of the image is min(10vw, 140px) */
     .hero { min-height: 340px; height: calc(100svh - 196px - min(10vw, 140px)); }
     @media (max-width: 640px) { .hero { height: calc(100svh - 196px - 18vw); } }
+    /* The ripple slider sits under the credential as part of the name block, quieter than it */
+    .hero-text .ripple-control { position: relative; left: auto; bottom: auto; transform: none;
+      justify-content: center; margin-top: 40px; font-size: 11px; letter-spacing: .16em; color: rgba(255,255,255,.7); }
+    .hero-text .ripple-control input { width: 120px; }
+    .hero-text .ripple-thumb { width: 12px; height: 12px; margin-top: -6px; }
     /* A soft edge: the ripple melts into the black over its last 90px instead of ending in a line */
     .hero-sketch { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 90px), transparent);
                    mask-image: linear-gradient(to bottom, #000 calc(100% - 90px), transparent); }
@@ -193,15 +198,15 @@
 
   <section class="hero">
     <div class="hero-sketch" data-sketch="ripples" data-src="images/home-geranium.webp" data-zoom="1" data-breathe="0.04" data-delay="3.5" aria-hidden="true"></div>
-    <label class="ripple-control">
-      <span>Ripple</span>
-      <span class="ripple-track">
-        <input type="range" id="ripple-intensity" min="0" max="1" step="any" value="0.2" aria-label="Ripple intensity">
-        <span class="ripple-thumb" aria-hidden="true"></span>
-      </span>
-    </label>
     <div class="hero-text">
       <h1>Harvey Knock</h1>      <p class="credential">First Class Honours : Graphic Design : Falmouth University</p>
+      <label class="ripple-control">
+        <span>Ripple</span>
+        <span class="ripple-track">
+          <input type="range" id="ripple-intensity" min="0" max="1" step="any" value="0.2" aria-label="Ripple intensity">
+          <span class="ripple-thumb" aria-hidden="true"></span>
+        </span>
+      </label>
     </div>
   </section>
 

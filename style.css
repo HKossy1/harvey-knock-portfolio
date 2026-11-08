@@ -56,13 +56,9 @@ img { display: block; max-width: 100%; height: auto; }
 .ripple-control {
   position: absolute; z-index: 2; bottom: 28px; left: 50%; transform: translateX(-50%);
   display: flex; align-items: center; gap: 14px;
-  padding: 10px 18px; border-radius: 999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.18);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 24px rgba(0,0,0,.25);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.75);
+  /* no glass backing: the label and line sit straight on the photo, a soft shadow keeping them legible */
+  text-shadow: 0 1px 6px rgba(0,0,0,.6); filter: drop-shadow(0 1px 3px rgba(0,0,0,.45));
+  font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.88);
   opacity: 0; animation: fade-in 1.2s ease 1.5s forwards;
 }
 .ripple-control input {
@@ -174,6 +170,37 @@ img { display: block; max-width: 100%; height: auto; }
 .cv-sketch { grid-column: 1 / -1; aspect-ratio: 2000 / 1339; background: #0b0b0b; overflow: hidden; }
 .cv-layout figure { aspect-ratio: 3 / 2; }
 .cv-sketch canvas { width: 100% !important; height: 100% !important; display: block; }
+/* Coded Visuals: the time control, sitting straight on the foot of the live sketch (no
+   backing; a soft shadow under the type and line keeps them legible over the photo) */
+.cv-sketch { position: relative; }
+.time-control {
+  position: absolute; z-index: 2; left: 50%; bottom: 16px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px; white-space: nowrap;
+  font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,.88);
+  text-shadow: 0 1px 6px rgba(0,0,0,.6); filter: drop-shadow(0 1px 3px rgba(0,0,0,.45));
+}
+.time-control button { background: none; border: 0; padding: 4px; color: inherit; cursor: pointer; display: grid; place-items: center; border-radius: 50%; transition: background .3s; }
+.time-control button:hover, .time-control button:focus-visible { background: rgba(255,255,255,.12); outline: none; }
+.time-control button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.time-control input[type=range] {
+  -webkit-appearance: none; appearance: none; width: 160px; height: 16px; margin: 0; background: transparent; cursor: pointer;
+  /* the centre mark: time standing still */
+  background-image: linear-gradient(rgba(255,255,255,.55), rgba(255,255,255,.55));
+  background-size: 1px 9px; background-position: center; background-repeat: no-repeat;
+}
+.time-control input[type=range]::-webkit-slider-runnable-track { height: 1px; background: rgba(255,255,255,.4); }
+.time-control input[type=range]::-moz-range-track { height: 1px; background: rgba(255,255,255,.4); }
+.time-control input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -5.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 0 rgba(255,255,255,.16); transition: box-shadow .3s; }
+.time-control input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: #fff; }
+.time-control input[type=range]:hover::-webkit-slider-thumb, .time-control input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 7px rgba(255,255,255,.16); }
+.time-control input[type=range]:focus-visible { outline: none; }
+.time-control .tc-rate { min-width: 3.4em; text-align: left; }
+.time-control .tc-clock { font-family: "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .04em; text-transform: none; color: rgba(255,255,255,.65); min-width: 6.5em; }
+@media (max-width: 640px) {
+  .time-control { bottom: 10px; gap: 10px; }
+  .time-control .tc-label, .time-control .tc-clock { display: none; }
+  .time-control input[type=range] { width: 120px; }
+}
 .cv-layout figure { margin: 0; min-height: 0; }
 .cv-layout figure img { width: 100%; height: 100%; object-fit: cover; }
 .cv-note { margin: 14px 0 0; font-size: 14px; color: var(--muted); }

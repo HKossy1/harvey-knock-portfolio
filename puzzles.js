@@ -135,19 +135,31 @@ function ripples(el) {
 // --- Concentric circles: split and rotate (continuous, or on hover) ---
 function circles(el, interactive) {
   return (p) => {
-    let img, ringWidth;
+    let img, ringWidth, scaled, lineW = 0.5;
     // Ring count and width can be set per page (data-rings, data-ring-width as a fraction of the photo width)
     const numRings = parseInt(el.dataset.rings, 10) || (interactive ? 6 : 8);
     const angles = [], speeds = [];
+    // The live (non-interactive) version runs on a clock: each ring's angle is its own speed
+    // times the time t, so time can be sped up, run backwards, or returned to zero, where
+    // every ring lines up again into the untouched photograph
+    let t = 0, rate = 1, vel = 1, rewinding = false, last = 0, holdUntil = 0;   // vel: how fast time is actually moving, easing towards rate
     p.preload = () => { img = p.loadImage(el.dataset.src); };
     function size() {
       if (!interactive) {
-        // As in the original file: the photo at its own pixel size, 150px rings,
-        // optionally cropped to a portrait frame. CSS scales the canvas to fit.
+        // As in the original file: the photo's own proportions, 150px rings (or data-ring-width),
+        // optionally cropped to a portrait frame. Drawn at the size it is shown (up to 2x for
+        // sharp screens) from a copy of the photo scaled once, rather than redrawing the full
+        // 2000px photo 21 times a frame
         const aspect = parseFloat(el.dataset.aspect) || img.width / img.height;
         const w = Math.min(img.width, Math.round(img.height * aspect));
-        p.resizeCanvas(w, Math.round(w / aspect));
-        ringWidth = el.dataset.ringWidth ? img.width * parseFloat(el.dataset.ringWidth) : 150;
+        const k = Math.min(1, (el.clientWidth || w) * Math.min(window.devicePixelRatio || 1, 2) / w);
+        p.resizeCanvas(Math.round(w * k), Math.round(w * k / aspect));
+        ringWidth = (el.dataset.ringWidth ? img.width * parseFloat(el.dataset.ringWidth) : 150) * k;
+        lineW = Math.max(0.5 * k, 0.35);
+        scaled = document.createElement('canvas');
+        scaled.width = Math.round(img.width * k); scaled.height = Math.round(img.height * k);
+        const sc = scaled.getContext('2d'); sc.imageSmoothingQuality = 'high';
+        sc.drawImage(img.canvas || img.elt, 0, 0, scaled.width, scaled.height);
         return;
       }
       const [w, h] = fitTo(el, img);
@@ -164,12 +176,80 @@ function circles(el, interactive) {
         speeds[i] = interactive ? 0.005 : p.random(-0.0015, 0.0015);
       }
       if (stillMotion && !interactive) {
-        angles.forEach((_, i) => (angles[i] = p.random(-0.6, 0.6)));
+        t = 400;                                              // a still, already-turned frame
         p.noLoop();
       }
+      if (!interactive && el.dataset.controls === 'time') timeControls();
     };
-    p.windowResized = size;
+
+    // Speed slider (left of centre runs time backwards), a return-to-the-photograph button,
+    // and a clock in the specimen labels' mono
+    function timeControls() {
+      const bar = document.createElement('div');
+      bar.className = 'time-control';
+      bar.innerHTML = `
+        <button type="button" class="tc-rewind" aria-label="Return to the photograph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"/></svg></button>
+        <span class="tc-label">Time</span>
+        <input type="range" min="-4" max="4" step="0.05" value="1" aria-label="Speed of time, backwards to the left, forwards to the right">
+        <span class="tc-rate">×1.0</span>
+        <span class="tc-clock" aria-live="off">T+ 00:00</span>`;
+      el.appendChild(bar);
+      const range = bar.querySelector('input'), out = bar.querySelector('.tc-rate');
+      el._tc = { clock: bar.querySelector('.tc-clock') };
+      range.addEventListener('input', () => {
+        let v = parseFloat(range.value);
+        if (Math.abs(v) < 0.15) { v = 0; range.value = 0; }      // a soft stop at the centre: time stands still
+        rate = v; rewinding = false; holdUntil = 0;
+        out.textContent = v === 0 ? 'Still' : `×${v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}`;
+        p.loop();
+      });
+      bar.querySelector('.tc-rewind').addEventListener('click', () => { rewinding = true; holdUntil = 0; p.loop(); });
+    }
+    p.windowResized = () => { size(); if (!interactive) p.redraw(); };
+    // The live version, drawn straight onto the canvas: the photo once, then each ring as only
+    // the square of photo it needs, clipped to its band and turned to its angle
+    function drawRings() {
+      const ctx = p.drawingContext, W = p.width, H = p.height, cx = W / 2, cy = H / 2;
+      const sw = scaled.width, sh = scaled.height;
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+      ctx.drawImage(scaled, cx - sw / 2, cy - sh / 2);
+      for (let i = 0; i < numRings; i++) {
+        const R = (i + 1) * ringWidth;
+        const x0 = Math.max(0, sw / 2 - R), y0 = Math.max(0, sh / 2 - R), x1 = Math.min(sw, sw / 2 + R), y1 = Math.min(sh, sh / 2 + R);
+        ctx.save();
+        ctx.translate(cx, cy); ctx.rotate(angles[i]);
+        ctx.beginPath();
+        ctx.arc(0, 0, R, 0, Math.PI * 2);
+        ctx.arc(0, 0, i * ringWidth, Math.PI * 2, 0, true);
+        ctx.closePath(); ctx.clip();
+        ctx.drawImage(scaled, x0, y0, x1 - x0, y1 - y0, x0 - sw / 2, y0 - sh / 2, x1 - x0, y1 - y0);
+        ctx.restore();
+      }
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = lineW;
+      for (let i = 1; i <= numRings; i++) { ctx.beginPath(); ctx.arc(cx, cy, i * ringWidth, 0, Math.PI * 2); ctx.stroke(); }
+    }
     p.draw = () => {
+      if (!interactive) {
+        const now = performance.now(), dt = last ? Math.min((now - last) / 1000, 0.1) : 0; last = now;
+        // Time never jumps: its speed always eases towards where it's asked to be, whether the
+        // slider moves, time stops, or it winds back to the photograph (fast at first, slowing
+        // as it nears zero), so the spin glides through every change
+        let want = rate;
+        if (rewinding) want = Math.max(-40, Math.min(40, -t * 2.2));
+        else if (now < holdUntil || (stillMotion && rate === 1)) want = 0;
+        vel += (want - vel) * Math.min(dt * 4, 1);
+        t += vel * dt;
+        if (rewinding && Math.abs(t) < 0.05) { t = 0; vel = 0; rewinding = false; holdUntil = now + 1800; }
+        for (let i = 0; i < numRings; i++) angles[i] = speeds[i] * 60 * t;
+        if (el._tc) {
+          const a = Math.abs(Math.round(t)), m = String(Math.floor(a / 60)).padStart(2, '0'), sec = String(a % 60).padStart(2, '0');
+          el._tc.clock.textContent = `T${t < -0.5 ? '−' : '+'} ${m}:${sec}`;
+        }
+        drawRings();
+        // Time standing still: draw this frame, then rest until something changes
+        if (rate === 0 && !rewinding && now >= holdUntil && Math.abs(vel) < 0.001) { vel = 0; p.noLoop(); last = 0; }
+        return;
+      }
       p.background(0);
       const iw = interactive ? p.width : img.width, ih = interactive ? p.height : img.height;
       p.image(img, p.width / 2, p.height / 2, iw, ih);
@@ -178,8 +258,7 @@ function circles(el, interactive) {
       p.push();
       p.translate(p.width / 2, p.height / 2);
       for (let i = 0; i < numRings; i++) {
-        if (!interactive) angles[i] += speeds[i];
-        else if (d > i * ringWidth && d < (i + 1) * ringWidth) angles[i] += speeds[i];
+        if (interactive && d > i * ringWidth && d < (i + 1) * ringWidth) angles[i] += speeds[i];
         p.push();
         p.rotate(angles[i]);
         ctx.save();
