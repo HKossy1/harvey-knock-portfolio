@@ -367,6 +367,13 @@ img { display: block; max-width: 100%; height: auto; }
   .film-reel { grid-template-columns: 1fr; }
 }
 
+/* Living Puzzles, playable: a canvas laid exactly over each photo */
+figure.puzzle { position: relative; }
+figure.puzzle canvas { position: absolute; top: 0; left: 0; width: 100%; height: auto; display: block; cursor: pointer; touch-action: pan-y; }
+figure[data-puzzle="grid"] canvas { aspect-ratio: 1200 / 800; touch-action: manipulation; }
+figure[data-puzzle="cycle"] canvas { aspect-ratio: 1195 / 800; cursor: grab; }
+.puzzle-hint { margin-top: 10px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
 /* Interactive puzzle pieces */
 .interactive { margin: 48px auto 0; max-width: 520px; text-align: center; }
 .interactive [data-sketch] { width: 100%; }

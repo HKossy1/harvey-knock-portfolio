@@ -35,8 +35,10 @@
     </header>
 
     <div class="gallery">
-      <figure><img src="images/p5-03.webp" width="1200" height="800" alt="Living Grid puzzle, assembled"></figure>
-      <figure><img src="images/p5-04.webp" width="1195" height="800" alt="Living Cycle puzzle, assembled"></figure>
+      <figure data-puzzle="grid"><img src="images/p5-03.webp" width="1200" height="800" alt="Living Grid puzzle, assembled. Playable: click a tile, then another, to swap them">
+        <figcaption class="puzzle-hint" data-touch="Living Grid · tap two tiles to swap them">Living Grid · click two tiles to swap them</figcaption></figure>
+      <figure data-puzzle="cycle"><img src="images/p5-04.webp" width="1195" height="800" alt="Living Cycle puzzle, assembled. Playable: hover over a ring to turn it">
+        <figcaption class="puzzle-hint" data-touch="Living Cycle · drag a ring to turn it">Living Cycle · hover over a ring to turn it</figcaption></figure>
       <figure><img src="images/p5-01.webp" width="763" height="608" alt="Living Grid packaging" loading="lazy"></figure>
       <figure><img src="images/p5-02.webp" width="763" height="607" alt="Living Cycle packaging" loading="lazy"></figure>
       <figure><img src="images/living-grid-hands.webp" width="1592" height="1106" alt="Living Grid tiles being arranged by hand" loading="lazy"></figure>
@@ -47,5 +49,6 @@
   </main>
 
   <footer><a href="mailto:knock.harvey@gmail.com">knock.harvey@gmail.com</a> · Somerset, UK</footer>
+  <script src="living.js" defer></script>
 </body>
 </html>

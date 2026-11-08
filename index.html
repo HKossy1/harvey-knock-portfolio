@@ -243,6 +243,7 @@
       ['composing-a-feeling.html', 'videos/a-little-home-card-end.webp', 'Composing a Feeling', 'Film & sound', 'Still from the end of A Little Home: sunlight breaking through pink flowers'],
     ];
     const N = PROJECTS.length;
+    let frontSince = 0;                                    // when the current front project arrived
     // Type frames: the text block's edges as fractions of the thumbnail (measured from the image)
     const TYPE_FRAMES = { 6: [0.2319, 0.1058, 0.7813, 0.8867] };
     const picker = document.getElementById('work');
@@ -261,7 +262,10 @@
       f.innerHTML = `<img src="${src}" alt="${alt}"${i > 3 && i < N - 3 ? ' loading="lazy"' : ''}>`;
       f.addEventListener('click', () => {
         const o = offset(i);
-        if (o === 0) location.href = href; else go(current + o);
+        // A side project is brought to the front first; it only opens once it has settled
+        // there (so the click that, or the hover that, brought it forward never opens it too)
+        if (o !== 0) go(current + o);
+        else if (performance.now() - frontSince > 900) location.href = href;
       });
       if (TYPE_FRAMES[i]) {
         const [l, t, r, b] = TYPE_FRAMES[i], fr = document.createElement('span');
@@ -580,7 +584,7 @@
     function go(i) {
       const next = ((i % N) + N) % N;
       if (next === current) return;
-      current = next;
+      current = next; frontSince = performance.now();
       layout(); setCaption(true); updateLive(); cueSet(false);
     }
 
